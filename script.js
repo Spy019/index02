@@ -4,7 +4,7 @@ const startButton = document.getElementById("startButton");
 
 const box = 20;
 let score = 0;
-let direction = "RIGHT";
+let direction = null;
 let gameRunning = false;
 
 let snake = [];
@@ -14,15 +14,6 @@ let lastTime = 0;
 let delay = 100;
 let accumulator = 0;
 
-document.addEventListener("keydown", event => {
-  if (!gameRunning) return;
-
-  if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-  else if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-  else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-  else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-});
-
 startButton.addEventListener("click", () => {
   resetGame();
   gameRunning = true;
@@ -31,37 +22,36 @@ startButton.addEventListener("click", () => {
   requestAnimationFrame(gameLoop);
 });
 
-// === วาดงูแบบสมจริง ===
+document.addEventListener("keydown", event => {
+  if (!gameRunning) return;
+  const key = event.key.toLowerCase();
+
+  if (key === "a" && direction !== "RIGHT") direction = "LEFT";
+  else if (key === "w" && direction !== "DOWN") direction = "UP";
+  else if (key === "d" && direction !== "LEFT") direction = "RIGHT";
+  else if (key === "s" && direction !== "UP") direction = "DOWN";
+});
+
+function resetGame() {
+  snake = [{ x: 9 * box, y: 10 * box }];
+  direction = null;
+  score = 0;
+  document.getElementById("score").textContent = score;
+  spawnFood();
+}
+
+function spawnFood() {
+  food = {
+    x: Math.floor(Math.random() * 20) * box,
+    y: Math.floor(Math.random() * 20) * box,
+  };
+}
+
 function drawSnake() {
   for (let i = 0; i < snake.length; i++) {
-    const segment = snake[i];
-
-    if (i === 0) {
-      // หัว
-      ctx.fillStyle = "darkgreen";
-      ctx.beginPath();
-      ctx.arc(segment.x + box / 2, segment.y + box / 2, box / 2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // ตา
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.arc(segment.x + box / 3, segment.y + box / 3, 3, 0, Math.PI * 2);
-      ctx.arc(segment.x + box / 1.5, segment.y + box / 3, 3, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (i === snake.length - 1) {
-      // หาง
-      ctx.fillStyle = "forestgreen";
-      ctx.beginPath();
-      ctx.arc(segment.x + box / 2, segment.y + box / 2, box / 3, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      // ลำตัว
-      ctx.fillStyle = "green";
-      ctx.beginPath();
-      ctx.arc(segment.x + box / 2, segment.y + box / 2, box / 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    const s = snake[i];
+    ctx.fillStyle = i === 0 ? "darkgreen" : "green";
+    ctx.fillRect(s.x, s.y, box, box);
   }
 }
 
@@ -73,6 +63,8 @@ function drawFood() {
 }
 
 function updateGame() {
+  if (!direction) return;
+
   let headX = snake[0].x;
   let headY = snake[0].y;
 
@@ -104,23 +96,8 @@ function updateGame() {
   snake.unshift({ x: headX, y: headY });
 }
 
-function resetGame() {
-  snake = [{ x: 9 * box, y: 10 * box }];
-  direction = "RIGHT";
-  score = 0;
-  document.getElementById("score").textContent = score;
-  spawnFood();
-}
-
-function spawnFood() {
-  food = {
-    x: Math.floor(Math.random() * 20) * box,
-    y: Math.floor(Math.random() * 20) * box,
-  };
-}
-
-function endGame(message) {
-  alert(message + " คะแนน: " + score);
+function endGame(msg) {
+  alert(`${msg} คะแนน: ${score}`);
   gameRunning = false;
 }
 
